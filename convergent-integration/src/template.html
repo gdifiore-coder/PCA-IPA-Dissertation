@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convergent Integration Pairing Tool</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --surface2: #0f3460;
+  --text: #e0e0e0;
+  --text-dim: #888;
+  --qual: #e94560;
+  --qual-bg: #2a1525;
+  --qual-border: #e94560;
+  --quant: #0ea5e9;
+  --quant-bg: #0c2535;
+  --quant-border: #0ea5e9;
+  --selected-border: #fbbf24;
+  --paired-opacity: 0.35;
+  --accent: #fbbf24;
+  --danger: #ef4444;
+  --success: #22c55e;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+header {
+  background: var(--surface);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #333;
+}
+header h1 { font-size: 15px; font-weight: 600; white-space: nowrap; }
+.header-info { font-size: 11px; color: var(--text-dim); }
+.toolbar {
+  background: var(--surface);
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #333;
+}
+.tab-bar { display: flex; gap: 2px; }
+.tab-btn {
+  padding: 5px 14px;
+  background: var(--surface2);
+  color: var(--text-dim);
+  border: 1px solid #333;
+  border-bottom: none;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 4px 4px 0 0;
+}
+.tab-btn.active { background: var(--bg); color: var(--text); border-color: var(--accent); }
+.pass-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 3px;
+  background: var(--surface2);
+  border-radius: 4px;
+}
+.pass-toggle label {
+  padding: 3px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.pass-toggle input[type="radio"] { display: none; }
+.pass-toggle input[type="radio"]:checked + span {
+  background: var(--accent);
+  color: #000;
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+select, button {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button:disabled { opacity: 0.4; cursor: default; border-color: #444; }
+.btn-pair { background: var(--success); color: #000; font-weight: 600; }
+.btn-silent-q { background: #a855f7; color: #fff; }
+.btn-attach { background: var(--quant); color: #000; font-weight: 600; }
+.btn-silent-n { background: #f97316; color: #000; }
+.btn-export { background: var(--accent); color: #000; font-weight: 600; }
+.btn-clear { background: var(--danger); color: #fff; }
+.action-buttons { display: flex; gap: 6px; margin-left: auto; }
+
+.main-area {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 90px);
+}
+.columns {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 4px;
+  padding: 4px;
+}
+.column {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+}
+.column h3 {
+  font-size: 12px;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  border-radius: 3px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.qual-column h3 { background: var(--qual-bg); color: var(--qual); border: 1px solid var(--qual-border); }
+.quant-column h3 { background: var(--quant-bg); color: var(--quant); border: 1px solid var(--quant-border); }
+.pairs-column h3 { background: var(--surface2); color: var(--accent); border: 1px solid var(--accent); }
+
+.item {
+  padding: 6px 8px;
+  margin: 2px 0;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+.qual-item { background: var(--qual-bg); border-color: #3a1525; }
+.quant-item { background: var(--quant-bg); border-color: #1a2535; }
+.item:hover { border-color: #666; }
+.item.selected { border-color: var(--selected-border) !important; box-shadow: 0 0 6px rgba(251,191,36,0.3); }
+.item.paired { opacity: var(--paired-opacity); pointer-events: none; }
+.item.paired label { cursor: default; }
+.item label { display: flex; align-items: baseline; gap: 6px; cursor: pointer; }
+.item-check { accent-color: var(--accent); flex-shrink: 0; }
+.item-code { font-weight: 700; font-size: 12px; }
+.qual-item .item-code { color: var(--qual); }
+.quant-item .item-code { color: var(--quant); }
+.item-participant { font-size: 11px; color: var(--text-dim); }
+.item-type { font-size: 10px; color: var(--text-dim); font-style: italic; }
+.item-dimension { font-size: 11px; margin: 2px 0 1px 22px; color: var(--accent); }
+.item-datapoint { font-size: 11px; margin: 1px 0 1px 22px; color: var(--text); }
+.item-source { font-size: 10px; margin-left: 22px; color: var(--text-dim); }
+
+.pair-entry {
+  background: var(--surface2);
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin: 3px 0;
+  font-size: 11px;
+}
+.pair-entry.target { border-color: var(--accent); box-shadow: 0 0 4px rgba(251,191,36,0.3); }
+.pair-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+.pair-label { font-weight: 600; }
+.pair-type-pair { color: var(--success); }
+.pair-type-silent-qual { color: #a855f7; }
+.pair-type-silent-quant { color: #f97316; }
+.pair-codes { color: var(--text-dim); }
+.pair-codes .qual-ref { color: var(--qual); }
+.pair-codes .quant-ref { color: var(--quant); }
+.btn-remove {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.pairings-panel {
+  border-top: 2px solid #333;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 4px 8px;
+  background: var(--surface);
+}
+.pairings-panel h3 {
+  font-size: 12px;
+  color: var(--accent);
+  padding: 2px 0;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 2;
+}
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Convergent Integration Pairing Tool</h1>
+  <span class="header-info">{{TOTAL_ITEMS}} data points | Creswell &amp; Plano Clark two-pass workflow</span>
+</header>
+
+<div class="toolbar">
+  <div class="tab-bar">
+    {{TABS}}
+  </div>
+
+  <div class="pass-toggle">
+    <label><input type="radio" name="pass" value="1" checked /><span>Pass 1</span></label>
+    <label><input type="radio" name="pass" value="2" /><span>Pass 2</span></label>
+  </div>
+
+  <select id="participant-filter">
+    {{FILTER_OPTIONS}}
+  </select>
+
+  <div class="action-buttons">
+    <button class="btn-pair" id="btn-pair" disabled>PAIR</button>
+    <button class="btn-silent-q" id="btn-silent-q" disabled>SILENT(Q)</button>
+    <button class="btn-attach" id="btn-attach" disabled style="display:none">ATTACH</button>
+    <button class="btn-silent-n" id="btn-silent-n" disabled style="display:none">SILENT(N)</button>
+    <button class="btn-export" id="btn-export">EXPORT CSV</button>
+    <button class="btn-clear" id="btn-clear">Clear All</button>
+  </div>
+</div>
+
+<div class="main-area">
+  <div id="panels-container">
+    {{PANELS}}
+  </div>
+
+  <div class="pairings-panel" id="pairings-panel">
+    <h3>Pairings (<span id="pair-count">0</span>)</h3>
+    <div id="pairings-list"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  const STORAGE_KEY = "convergent-pairing-v1";
+  const RQ_LIST = "{{RQ_LIST}}".split(",");
+
+  // ---- State ----
+  let state = {
+    pairings: {},    // keyed by RQ, each is array of {id, type, qual:[], quant:[]}
+    nextPairId: 1
+  };
+  for (const rq of RQ_LIST) state.pairings[rq] = [];
+
+  let currentRQ = RQ_LIST[0];
+  let currentPass = 1;
+  let targetPairId = null;  // for Pass 2 attach
+
+  // ---- Persistence ----
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const loaded = JSON.parse(raw);
+        if (loaded.pairings) {
+          state = loaded;
+          // ensure all RQs exist
+          for (const rq of RQ_LIST) {
+            if (!state.pairings[rq]) state.pairings[rq] = [];
+          }
+        }
+      }
+    } catch(e) { console.warn("Failed to load state", e); }
+  }
+
+  // ---- DOM refs ----
+  const panelsContainer = document.getElementById("panels-container");
+  const pairingsList = document.getElementById("pairings-list");
+  const pairCount = document.getElementById("pair-count");
+  const btnPair = document.getElementById("btn-pair");
+  const btnSilentQ = document.getElementById("btn-silent-q");
+  const btnAttach = document.getElementById("btn-attach");
+  const btnSilentN = document.getElementById("btn-silent-n");
+  const btnExport = document.getElementById("btn-export");
+  const btnClear = document.getElementById("btn-clear");
+  const participantFilter = document.getElementById("participant-filter");
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const passRadios = document.querySelectorAll('input[name="pass"]');
+
+  // ---- Helpers ----
+  function getPanel(rq) {
+    return panelsContainer.querySelector(`.rq-panel[data-rq="${rq}"]`);
+  }
+
+  function getAllItems(rq, strand) {
+    const panel = getPanel(rq);
+    if (!panel) return [];
+    return Array.from(panel.querySelectorAll(`.item[data-strand="${strand}"]`));
+  }
+
+  function getCheckedCodes(rq, strand) {
+    return getAllItems(rq, strand)
+      .filter(el => !el.classList.contains("paired") && el.querySelector(".item-check").checked)
+      .map(el => el.dataset.code);
+  }
+
+  function uncheckAll(rq) {
+    const panel = getPanel(rq);
+    if (!panel) return;
+    panel.querySelectorAll(".item-check").forEach(cb => { cb.checked = false; });
+    panel.querySelectorAll(".item.selected").forEach(el => el.classList.remove("selected"));
+  }
+
+  function pairedCodes(rq) {
+    const codes = new Set();
+    for (const p of state.pairings[rq] || []) {
+      p.qual.forEach(c => codes.add(c));
+      p.quant.forEach(c => codes.add(c));
+    }
+    return codes;
+  }
+
+  // ---- Render paired state on items ----
+  function refreshPairedState() {
+    for (const rq of RQ_LIST) {
+      const codes = pairedCodes(rq);
+      const panel = getPanel(rq);
+      if (!panel) continue;
+      panel.querySelectorAll(".item").forEach(el => {
+        const isPaired = codes.has(el.dataset.code);
+        el.classList.toggle("paired", isPaired);
+        const cb = el.querySelector(".item-check");
+        if (isPaired) {
+          cb.checked = false;
+          cb.disabled = true;
+        } else {
+          cb.disabled = false;
+        }
+      });
+    }
+  }
+
+  // ---- Render pairings panel ----
+  function renderPairings() {
+    const pairs = state.pairings[currentRQ] || [];
+    pairCount.textContent = pairs.length;
+
+    let html = "";
+    for (const p of pairs) {
+      let typeClass, typeLabel;
+      if (p.type === "pair") { typeClass = "pair-type-pair"; typeLabel = "PAIR"; }
+      else if (p.type === "silent-qual") { typeClass = "pair-type-silent-qual"; typeLabel = "SILENT(Q)"; }
+      else { typeClass = "pair-type-silent-quant"; typeLabel = "SILENT(N)"; }
+
+      const isTarget = (currentPass === 2 && targetPairId === p.id);
+      const targetCls = isTarget ? " target" : "";
+      const qualStr = p.qual.map(c => `<span class="qual-ref">${c}</span>`).join(", ") || "—";
+      const quantStr = p.quant.map(c => `<span class="quant-ref">${c}</span>`).join(", ") || "—";
+
+      html += `<div class="pair-entry${targetCls}" data-pair-id="${p.id}">
+        <div class="pair-header">
+          <span class="pair-label ${typeClass}">P${p.id} [${typeLabel}]</span>
+          <button class="btn-remove" data-pair-id="${p.id}">&times; remove</button>
+        </div>
+        <div class="pair-codes">QUAL: ${qualStr} | QUANT: ${quantStr}</div>
+      </div>`;
+    }
+    pairingsList.innerHTML = html;
+
+    // Bind remove buttons
+    pairingsList.querySelectorAll(".btn-remove").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        removePairing(parseInt(btn.dataset.pairId));
+      });
+    });
+
+    // Bind pair click for Pass 2 targeting
+    if (currentPass === 2) {
+      pairingsList.querySelectorAll(".pair-entry").forEach(el => {
+        el.addEventListener("click", () => {
+          const pid = parseInt(el.dataset.pairId);
+          targetPairId = (targetPairId === pid) ? null : pid;
+          renderPairings();
+          updateButtons();
+        });
+      });
+    }
+  }
+
+  // ---- Actions ----
+  function addPairing(type, qualCodes, quantCodes) {
+    const p = { id: state.nextPairId++, type, qual: qualCodes, quant: quantCodes };
+    state.pairings[currentRQ].push(p);
+    save();
+    uncheckAll(currentRQ);
+    refreshPairedState();
+    renderPairings();
+    updateButtons();
+  }
+
+  function removePairing(pairId) {
+    state.pairings[currentRQ] = state.pairings[currentRQ].filter(p => p.id !== pairId);
+    if (targetPairId === pairId) targetPairId = null;
+    save();
+    uncheckAll(currentRQ);
+    refreshPairedState();
+    renderPairings();
+    updateButtons();
+  }
+
+  function doPair() {
+    const qc = getCheckedCodes(currentRQ, "QUAL");
+    const nc = getCheckedCodes(currentRQ, "QUANT");
+    if (qc.length === 0 || nc.length === 0) return;
+    addPairing("pair", qc, nc);
+  }
+
+  function doSilentQ() {
+    const qc = getCheckedCodes(currentRQ, "QUAL");
+    if (qc.length === 0) return;
+    addPairing("silent-qual", qc, []);
+  }
+
+  function doAttach() {
+    if (targetPairId === null) return;
+    const nc = getCheckedCodes(currentRQ, "QUANT");
+    if (nc.length === 0) return;
+    const pair = state.pairings[currentRQ].find(p => p.id === targetPairId);
+    if (!pair) return;
+    pair.quant.push(...nc);
+    save();
+    uncheckAll(currentRQ);
+    refreshPairedState();
+    renderPairings();
+    updateButtons();
+  }
+
+  function doSilentN() {
+    const nc = getCheckedCodes(currentRQ, "QUANT");
+    if (nc.length === 0) return;
+    addPairing("silent-quant", [], nc);
+  }
+
+  function doClearAll() {
+    if (!confirm(`Clear ALL pairings for ${currentRQ}? This cannot be undone.`)) return;
+    state.pairings[currentRQ] = [];
+    targetPairId = null;
+    save();
+    uncheckAll(currentRQ);
+    refreshPairedState();
+    renderPairings();
+    updateButtons();
+  }
+
+  function doExport() {
+    let rows = [["RQ", "Pair#", "Type", "Qual_Codes", "Quant_Codes"]];
+    for (const rq of RQ_LIST) {
+      for (const p of state.pairings[rq]) {
+        rows.push([
+          rq,
+          "P" + p.id,
+          p.type,
+          p.qual.join("; "),
+          p.quant.join("; ")
+        ]);
+      }
+    }
+    const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const d = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `pairings_${d}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---- Button state ----
+  function updateButtons() {
+    if (currentPass === 1) {
+      btnPair.style.display = "";
+      btnSilentQ.style.display = "";
+      btnAttach.style.display = "none";
+      btnSilentN.style.display = "none";
+
+      const qc = getCheckedCodes(currentRQ, "QUAL");
+      const nc = getCheckedCodes(currentRQ, "QUANT");
+      btnPair.disabled = qc.length === 0 || nc.length === 0;
+      btnSilentQ.disabled = qc.length === 0;
+    } else {
+      btnPair.style.display = "none";
+      btnSilentQ.style.display = "none";
+      btnAttach.style.display = "";
+      btnSilentN.style.display = "";
+
+      const nc = getCheckedCodes(currentRQ, "QUANT");
+      btnAttach.disabled = targetPairId === null || nc.length === 0;
+      btnSilentN.disabled = nc.length === 0;
+    }
+  }
+
+  // ---- Pass toggle: show/hide columns ----
+  function applyPassView() {
+    const panel = getPanel(currentRQ);
+    if (!panel) return;
+    const qualCol = panel.querySelector(".qual-column");
+
+    if (currentPass === 1) {
+      qualCol.classList.remove("hidden");
+    } else {
+      qualCol.classList.add("hidden");
+      // In pass 2, only show unpaired quant
+    }
+    targetPairId = null;
+    uncheckAll(currentRQ);
+    updateButtons();
+    renderPairings();
+  }
+
+  // ---- Participant filter ----
+  function applyFilter() {
+    const val = participantFilter.value;
+    for (const rq of RQ_LIST) {
+      const panel = getPanel(rq);
+      if (!panel) continue;
+      panel.querySelectorAll(".item").forEach(el => {
+        if (val === "all" || el.dataset.participant === val) {
+          el.classList.remove("hidden");
+        } else {
+          el.classList.add("hidden");
+        }
+      });
+    }
+  }
+
+  // ---- Tab switching ----
+  function switchTab(rq) {
+    currentRQ = rq;
+    tabBtns.forEach(btn => btn.classList.toggle("active", btn.dataset.rq === rq));
+    document.querySelectorAll(".rq-panel").forEach(p => {
+      p.style.display = p.dataset.rq === rq ? "" : "none";
+    });
+    targetPairId = null;
+    uncheckAll(currentRQ);
+    applyPassView();
+    applyFilter();
+    renderPairings();
+    updateButtons();
+  }
+
+  // ---- Item check/select sync ----
+  function onItemChange(e) {
+    const item = e.target.closest(".item");
+    if (!item) return;
+    item.classList.toggle("selected", e.target.checked);
+    updateButtons();
+  }
+
+  // ---- Bind events ----
+  tabBtns.forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.rq)));
+
+  passRadios.forEach(r => r.addEventListener("change", () => {
+    currentPass = parseInt(document.querySelector('input[name="pass"]:checked').value);
+    applyPassView();
+  }));
+
+  participantFilter.addEventListener("change", applyFilter);
+
+  panelsContainer.addEventListener("change", onItemChange);
+
+  btnPair.addEventListener("click", doPair);
+  btnSilentQ.addEventListener("click", doSilentQ);
+  btnAttach.addEventListener("click", doAttach);
+  btnSilentN.addEventListener("click", doSilentN);
+  btnExport.addEventListener("click", doExport);
+  btnClear.addEventListener("click", doClearAll);
+
+  // ---- Init ----
+  load();
+  refreshPairedState();
+  applyPassView();
+  renderPairings();
+  updateButtons();
+
+})();
+</script>
+</body>
+</html>
