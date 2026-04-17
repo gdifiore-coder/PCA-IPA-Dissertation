@@ -4,7 +4,7 @@ A web-based application for systematically integrating qualitative (IPA) and qua
 
 ## Overview
 
-This tool operationalizes the integration step of a convergent mixed-methods design (Creswell & Plano Clark, 2018) using the explanatory schema sorting method described by Foss and Waters (2015). It was built to support the Discussion chapter of the dissertation *Personal Constructs of Non-Recovering Drug and Alcohol Counselors* (DiFiore, 2025).
+This tool operationalizes the integration step of a convergent mixed-methods design (Creswell & Plano Clark, 2018) using the explanatory schema sorting method described by Foss and Waters (2015). It was built to support the Discussion chapter of the dissertation *Personal Constructs of Non-Recovering Drug and Alcohol Counselors* (DiFiore, 2026).
 
 The application allows the researcher to:
 
