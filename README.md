@@ -27,11 +27,15 @@ The integration procedure involved:
 5. **Classifying** each pairing as Convergence, Complementarity, Divergence, or Silence (Creswell & Plano Clark, 2018)
 
 ## Repository Structure
+
 | Branch | Contents |
 |---|---|
 | `main` | Project documentation |
-| `claude/dissertation-pairing-tool` | HTML application source... |
-The post-integration CSV with completed pairings and classifications will be added to the claude/dissertation-pairing-tool branch upon completion of the integration procedure.
+| `claude/dissertation-pairing-tool` | Pre-integration data inventory (`data_inventory.xlsx - All_Data_Points.csv`), application source and build (`convergent-integration/`), and README |
+
+The `convergent-integration/` folder contains the application source (`src/`), built application (`dist/`), sample data (`data/`), tests (`tests/`), and dependencies (`requirements.txt`). The pairing tool itself is located in `dist/`.
+
+The post-integration CSV with completed pairings and classifications will be added to the `claude/dissertation-pairing-tool` branch upon completion of the integration procedure.
 
 ## Note on Multi-RQ Data Points
 
@@ -62,7 +66,7 @@ Jankowicz, D. (2004). *The easy guide to repertory grids*. Wiley.
 
 ## Citation
 
-DiFiore, G. C. (2025). *Personal constructs of non-recovering drug and alcohol counselors* [Doctoral dissertation, Immaculata University].
+DiFiore, G. C. (2026). *Personal constructs of non-recovering drug and alcohol counselors* [Doctoral dissertation, Immaculata University].
 
 ## License
 
