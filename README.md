@@ -27,15 +27,8 @@ The integration procedure involved:
 5. **Classifying** each pairing as Convergence, Complementarity, Divergence, or Silence (Creswell & Plano Clark, 2018)
 
 ## Repository Structure
-main ─── project documentation
-
-claude/dissertation-pairing-tool
-├── README.md
-├── data_inventory.xlsx - All_Data_Points.csv   ← pre-integration inventory
-├── [post-integration CSV]                       ← forthcoming
-└── convergent-integration/
-    └── [HTML application source]
-
+BranchContentsmainProject documentationclaude/dissertation-pairing-toolHTML application source (convergent-integration/), pre-integration data inventory (data_inventory.xlsx - All_Data_Points.csv), and README
+The post-integration CSV with completed pairings and classifications will be added to the claude/dissertation-pairing-tool branch upon completion of the integration procedure.
 
 ## Note on Multi-RQ Data Points
 
