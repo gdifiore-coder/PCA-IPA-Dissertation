@@ -26,14 +26,9 @@ The integration procedure involved:
 4. **Pairing** qualitative and quantitative findings that address the same phenomenon within each RQ
 5. **Classifying** each pairing as Convergence, Complementarity, Divergence, or Silence (Creswell & Plano Clark, 2018)
 
-## Repository Structure
-
-| Branch | Contents |
-|---|---|
-| `main` | This README and project documentation |
-| `app` | HTML application source code (side-by-side comparison interface with classification drop-downs) |
-| `database` | Integration inventory data (compiled, coded, and sorted data points) |
-
+Repository Structure
+BranchContentsmainProject documentationclaude/dissertation-pairing-toolHTML application source (convergent-integration/), pre-integration data inventory (data_inventory.xlsx - All_Data_Points.csv), and README
+The post-integration CSV with completed pairings and classifications will be added to the claude/dissertation-pairing-tool branch upon completion of the integration procedure.
 ## Note on Multi-RQ Data Points
 
 Some data points, particularly People Grid principal components and element positions, appear under more than one research question in the integration inventory. This is by design. The sorting procedure assigns data points based on what they reveal, and a single PCA output can address different research questions depending on the interpretive question being asked of it. For example, the same element distance between Self and Connected Client may serve RQ1b (how the participant construes people who use substances), RQ2 (where the professional self sits relative to clients), and RQ3 (the structural architecture of the therapeutic relationship). Each appearance carries a different interpretive function. The duplication reflects the multi-RQ relevance of the data, not a coding error.
